@@ -1,215 +1,170 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz d'Història</title>
-<style>
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f0; }
-header { background:#34495e; color:white; padding:1rem; text-align:center; }
-.container { max-width:900px; margin:2rem auto; background:white; padding:2rem; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.2);}
-button { background:#2980b9; color:white; border:none; padding:0.5rem 1rem; margin:0.5rem; border-radius:5px; cursor:pointer;}
-button:hover { background:#3498db;}
-.hidden { display:none; }
-.question { padding:1rem; margin:1rem 0; border-radius:5px; border:1px solid #ccc; transition: all 0.3s ease; }
-#timer { font-weight:bold; color:#e74c3c; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz d'Història</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        .course-selection, .topics, .exam-mode {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .timer {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <h1>Quiz d'Història</h1>
+    </header>
 
-<header>
-<h1>Quiz d'Història</h1>
-</header>
+    <div class="container">
+        <!-- Selecció de curs -->
+        <div class="course-selection">
+            <h2>Tria el teu curs</h2>
+            <button onclick="selectCourse('batxillerat')">Batxillerat</button>
+            <button onclick="selectCourse('eso')">ESO</button>
+        </div>
 
-<div class="container">
-<div id="courseSelection">
-<h2>Selecciona el teu curs</h2>
-<button onclick="selectCourse('ESO1')">ESO 1</button>
-<button onclick="selectCourse('ESO2')">ESO 2</button>
-<button onclick="selectCourse('BATX')">Batxillerat</button>
-</div>
+        <!-- Temes -->
+        <div class="topics hidden">
+            <h2>Temes disponibles</h2>
+            <div id="topics-list"></div>
+            <button onclick="startExam()">Mode Examen (30 min)</button>
+        </div>
 
-<div id="topicSelection" class="hidden">
-<h2 id="topicTitle"></h2>
-<div id="topics"></div>
-<button onclick="startExam()">Mode Examen</button>
-<button onclick="backToCourses()">Canviar Curs</button>
-</div>
+        <!-- Mode examen -->
+        <div class="exam-mode hidden">
+            <h2>Examen</h2>
+            <div class="timer" id="timer">30:00</div>
+            <div id="exam-questions"></div>
+            <button onclick="finishExam()">Finalitzar Examen</button>
+        </div>
 
-<div id="quiz" class="hidden">
-<h2 id="quizTitle"></h2>
-<div id="quizQuestions"></div>
-<button onclick="finishQuiz()">Acabar Quiz</button>
-</div>
+        <!-- Resultats -->
+        <div id="results" class="hidden">
+            <h2>Resultats</h2>
+            <p id="score"></p>
+            <button onclick="location.reload()">Tornar a començar</button>
+        </div>
+    </div>
 
-<div id="exam" class="hidden">
-<h2 id="examTitle"></h2>
-<div id="timer">30:00</div>
-<div id="examQuestions"></div>
-<button onclick="finishExam()">Acabar Examen</button>
-</div>
+    <script>
+        const topics = [
+            "Tema 1: Prehistòria",
+            "Tema 2: Antic Egipte",
+            "Tema 3: Grècia Clàssica",
+            "Tema 4: Roma",
+            "Tema 5: Edat Mitjana",
+            "Tema 6: Renaixement",
+            "Tema 7: Revolució Industrial",
+            "Tema 8: Segle XX"
+        ];
 
-<div id="results" class="hidden">
-<h2>Resultats</h2>
-<div id="score"></div>
-<button onclick="backToCourses()">Tornar a cursos</button>
-</div>
-</div>
-
-<script>
-// Dades exemples: 8 temes, 3 preguntes per tema
-const courses = {
-    'ESO1': {
-        'Tema 1': [
-            {q:'Pregunta 1?', options:['A','B','C'], answer:0},
-            {q:'Pregunta 2?', options:['A','B','C'], answer:1},
-            {q:'Pregunta 3?', options:['A','B','C'], answer:2},
-        ],
-        'Tema 2':[ {q:'?', options:['A','B'], answer:0} ],
-        'Tema 3':[ {q:'?', options:['A','B'], answer:0} ],
-        'Tema 4':[ {q:'?', options:['A','B'], answer:0} ],
-        'Tema 5':[ {q:'?', options:['A','B'], answer:0} ],
-        'Tema 6':[ {q:'?', options:['A','B'], answer:0} ],
-        'Tema 7':[ {q:'?', options:['A','B'], answer:0} ],
-        'Tema 8':[ {q:'?', options:['A','B'], answer:0} ],
-    },
-    'ESO2': { /* igual estructura */ },
-    'BATX': { /* igual estructura */ }
-};
-
-let selectedCourse = '';
-let selectedTopic = '';
-let currentQuestions = [];
-let timerInterval;
-
-// Elements
-const courseSelection = document.getElementById('courseSelection');
-const topicSelection = document.getElementById('topicSelection');
-const quizDiv = document.getElementById('quiz');
-const examDiv = document.getElementById('exam');
-const resultsDiv = document.getElementById('results');
-const topicsDiv = document.getElementById('topics');
-const topicTitle = document.getElementById('topicTitle');
-const quizTitle = document.getElementById('quizTitle');
-const quizQuestionsDiv = document.getElementById('quizQuestions');
-const examTitle = document.getElementById('examTitle');
-const examQuestionsDiv = document.getElementById('examQuestions');
-const timerDisplay = document.getElementById('timer');
-const scoreDiv = document.getElementById('score');
-
-function selectCourse(course){
-    selectedCourse = course;
-    courseSelection.classList.add('hidden');
-    topicSelection.classList.remove('hidden');
-    topicTitle.textContent = `Cursos de ${course}`;
-    topicsDiv.innerHTML = '';
-    for(const topic in courses[course]){
-        const btn = document.createElement('button');
-        btn.textContent = topic;
-        btn.onclick = ()=> startQuiz(topic);
-        topicsDiv.appendChild(btn);
-    }
-}
-
-function backToCourses(){
-    topicSelection.classList.add('hidden');
-    quizDiv.classList.add('hidden');
-    examDiv.classList.add('hidden');
-    resultsDiv.classList.add('hidden');
-    courseSelection.classList.remove('hidden');
-    clearInterval(timerInterval);
-}
-
-// --- Quiz d'estudi ---
-function startQuiz(topic){
-    selectedTopic = topic;
-    currentQuestions = courses[selectedCourse][topic];
-    quizDiv.classList.remove('hidden');
-    examDiv.classList.add('hidden');
-    resultsDiv.classList.add('hidden');
-    quizTitle.textContent = `${topic} - Quiz d'Estudi`;
-    quizQuestionsDiv.innerHTML = "";
-
-    currentQuestions.forEach((q,i) => {
-        const div = document.createElement('div');
-        div.classList.add('question');
-        div.innerHTML = `<h3>${q.q}</h3>` +
-                        q.options.map((opt, idx) => `<label><input type="radio" name="q${i}" value="${idx}"> ${opt}</label><br>`).join('');
-        quizQuestionsDiv.appendChild(div);
-
-        const inputs = div.querySelectorAll('input[type="radio"]');
-        inputs.forEach(input => {
-            input.addEventListener('change', () => {
-                inputs.forEach(inp => inp.disabled = true);
-                const selValue = parseInt(input.value);
-                if(selValue === q.answer){
-                    div.style.backgroundColor = '#2ecc71';
-                    div.style.color = 'white';
-                } else {
-                    div.style.backgroundColor = '#e74c3c';
-                    div.style.color = 'white';
-                    inputs[q.answer].parentElement.style.fontWeight = 'bold';
-                }
+        function selectCourse(course) {
+            document.querySelector('.course-selection').classList.add('hidden');
+            document.querySelector('.topics').classList.remove('hidden');
+            const topicsList = document.getElementById('topics-list');
+            topicsList.innerHTML = '';
+            topics.forEach((topic, index) => {
+                let btn = document.createElement('button');
+                btn.textContent = topic;
+                btn.onclick = () => alert(`Aquesta seria la secció d'estudi per: ${topic}`);
+                topicsList.appendChild(btn);
             });
-        });
-    });
-}
-
-function finishQuiz(){
-    quizDiv.classList.add('hidden');
-    resultsDiv.classList.remove('hidden');
-    scoreDiv.textContent = "Has completat el quiz d'estudi. Mira el feedback en colors.";
-}
-
-// --- Mode examen ---
-function startExam(){
-    selectedTopic = null;
-    currentQuestions = [].concat(...Object.values(courses[selectedCourse])); // totes les preguntes
-    examDiv.classList.remove('hidden');
-    quizDiv.classList.add('hidden');
-    topicSelection.classList.add('hidden');
-    resultsDiv.classList.add('hidden');
-    examTitle.textContent = `${selectedCourse} - Mode Examen`;
-    examQuestionsDiv.innerHTML = '';
-
-    currentQuestions.forEach((q,i)=>{
-        const div = document.createElement('div');
-        div.classList.add('question');
-        div.innerHTML = `<h3>${q.q}</h3>` +
-                        q.options.map((opt, idx) => `<label><input type="radio" name="eq${i}" value="${idx}"> ${opt}</label><br>`).join('');
-        examQuestionsDiv.appendChild(div);
-    });
-
-    let time = 30*60; // 30 minuts
-    timerDisplay.textContent = formatTime(time);
-    timerInterval = setInterval(()=>{
-        time--;
-        timerDisplay.textContent = formatTime(time);
-        if(time<=0){
-            clearInterval(timerInterval);
-            finishExam();
         }
-    },1000);
-}
 
-function finishExam(){
-    clearInterval(timerInterval);
-    let correct = 0;
-    currentQuestions.forEach((q,i)=>{
-        const selected = document.querySelector(`input[name="eq${i}"]:checked`);
-        if(selected && parseInt(selected.value) === q.answer) correct++;
-    });
-    examDiv.classList.add('hidden');
-    resultsDiv.classList.remove('hidden');
-    scoreDiv.textContent = `Has encertat ${correct} de ${currentQuestions.length} preguntes.`;
-}
+        function startExam() {
+            document.querySelector('.topics').classList.add('hidden');
+            document.querySelector('.exam-mode').classList.remove('hidden');
+            startTimer(30 * 60); // 30 minuts
+            loadExamQuestions();
+        }
 
-function formatTime(seconds){
-    const m = Math.floor(seconds/60).toString().padStart(2,'0');
-    const s = (seconds%60).toString().padStart(2,'0');
-    return `${m}:${s}`;
-}
-</script>
+        function startTimer(seconds) {
+            const timerEl = document.getElementById('timer');
+            let remaining = seconds;
+            const interval = setInterval(() => {
+                let mins = Math.floor(remaining / 60);
+                let secs = remaining % 60;
+                timerEl.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                remaining--;
+                if (remaining < 0) {
+                    clearInterval(interval);
+                    finishExam();
+                }
+            }, 1000);
+        }
 
+        function loadExamQuestions() {
+            const examDiv = document.getElementById('exam-questions');
+            examDiv.innerHTML = '';
+            for (let i=1; i<=5; i++) {
+                let q = document.createElement('div');
+                q.innerHTML = `
+                    <p><strong>Pregunta ${i}:</strong> Quina és la resposta correcta?</p>
+                    <select id="q${i}">
+                        <option value="0">Opció 1</option>
+                        <option value="1">Opció 2</option>
+                        <option value="0">Opció 3</option>
+                        <option value="0">Opció 4</option>
+                    </select>
+                `;
+                examDiv.appendChild(q);
+            }
+        }
+
+        function finishExam() {
+            let score = 0;
+            for (let i=1; i<=5; i++) {
+                let val = parseInt(document.getElementById(`q${i}`).value);
+                score += val;
+            }
+            document.querySelector('.exam-mode').classList.add('hidden');
+            const results = document.getElementById('results');
+            results.classList.remove('hidden');
+            document.getElementById('score').textContent = `La teva puntuació és: ${score} / 5`;
+        }
+    </script>
 </body>
 </html>
