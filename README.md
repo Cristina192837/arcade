@@ -1,4 +1,5 @@
 # arcade
+index.html
 <!DOCTYPE html>
 <html lang="ca">
 <head>
