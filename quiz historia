@@ -1,14 +1,55 @@
 <!DOCTYPE html>
-<!-- ✨ EXEMPLES: DUPLICA I EDITA A VOLUNTAT ✨ -->
-<!-- JOC EDUCATIU: HISTÒRIA -->
-<a class="game-card" href="quiz-historia.html" data-section="educatiu" data-tags="història,quiz,antiguitat" target="_blank" rel="noopener">
-  <div class="game-cover">Quiz d'Història</div>
-  <div class="game-body">
-    <div class="game-title">Quiz Ràpid d'Història</div>
-    <div class="meta">
-      <span class="chip">Educatiu</span>
-      <span class="chip">Història</span>
-      <span class="chip">Quiz</span>
-    </div>
-  </div>
-</a>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Exemple</title>
+</head>
+<body>
+  <h1>Quiz d'Història</h1>
+  <div id="pregunta"></div>
+  <button id="mostra-resposta">Mostra resposta</button>
+
+  <script src="quiz.js"></script>
+</body>
+</html>
+// Exemple de pregunta
+const pregunta = {
+  text: "Qui va ser el primer rei d'Espanya?",
+  resposta: "Jaume I"
+};
+
+// Mostrar la pregunta a la web
+document.getElementById('pregunta').textContent = pregunta.text;
+
+// Quan cliquem el botó, mostrar la resposta
+document.getElementById('mostra-resposta').addEventListener('click', () => {
+  alert(pregunta.resposta);
+});
+[
+  { "pregunta": "Qui va ser el primer rei d'Espanya?", "resposta": "Jaume I" },
+  { "pregunta": "En quin any va començar la Primera Guerra Mundial?", "resposta": "1914" },
+  { "pregunta": "Quina va ser la causa principal de la Revolució Francesa?", "resposta": "Desigualtat social i econòmica" }
+]
+fetch('preguntes.json')
+  .then(res => res.json())
+  .then(dades => {
+    let index = 0;
+
+    function mostrarPregunta() {
+      document.getElementById('pregunta').textContent = dades[index].pregunta;
+    }
+
+    document.getElementById('mostra-resposta').addEventListener('click', () => {
+      alert(dades[index].resposta);
+      index++;
+      if(index < dades.length) mostrarPregunta();
+      else alert("Has acabat el quiz!");
+    });
+
+    mostrarPregunta();
+  });
+<style>
+body { font-family: Arial; text-align: center; padding: 20px; }
+button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+#pregunta { font-size: 24px; margin: 30px 0; }
+</style>
