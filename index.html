@@ -300,3 +300,175 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz d'Història – 1r i 2n de Batxillerat</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+  h1, h2 { text-align: center; }
+  .hidden { display: none; }
+  button { padding: 10px 20px; margin: 5px; }
+  .flashcard { border: 1px solid #333; padding: 20px; margin: 10px auto; max-width: 400px; text-align: center; background: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>Quiz d'Història – 1r i 2n de Batxillerat</h1>
+
+<div id="pantalla-inicial">
+  <button onclick="triarBatx(1)">1r Batxillerat</button>
+  <button onclick="triarBatx(2)">2n Batxillerat</button>
+</div>
+
+<div id="pantalla-temes" class="hidden">
+  <h2>Tria un tema (exemple 2n Batx.)</h2>
+  <div id="llista-temes"></div>
+</div>
+
+<div id="pantalla-mode" class="hidden">
+  <h2 id="tema-titol"></h2>
+  <button onclick="comencarEstudi()">Mode Estudi</button>
+  <button onclick="comencarExamen()">Mode Examen</button>
+</div>
+
+<div id="pantalla-estudi" class="hidden">
+  <div id="pregunta-estudi"></div>
+  <button onclick="mostraResposta()">Mostra resposta</button>
+  <button onclick="preguntaAnterior()">Enrere</button>
+  <button onclick="preguntaSeguent()">Endavant</button>
+  <button onclick="mostrarFlashcards()">Flashcards</button>
+</div>
+
+<div id="pantalla-flashcards" class="hidden">
+  <div id="flashcard" class="flashcard" onclick="giraFlashcard()"></div>
+  <button onclick="flashcardAnterior()">Enrere</button>
+  <button onclick="flashcardSeguent()">Endavant</button>
+  <button onclick="tornarEstudi()">Tornar a estudi</button>
+</div>
+
+<script>
+let temaSeleccionat = '';
+let preguntes = [];
+let indexPregunta = 0;
+
+const temes2n = ['Tema 1', 'Tema 2']; // afegeix els 8 temes aquí
+const pantallaInicial = document.getElementById('pantalla-inicial');
+const pantallaTemes = document.getElementById('pantalla-temes');
+const pantallaMode = document.getElementById('pantalla-mode');
+const pantallaEstudi = document.getElementById('pantalla-estudi');
+const pantallaFlashcards = document.getElementById('pantalla-flashcards');
+const llistaTemesDiv = document.getElementById('llista-temes');
+
+function triarBatx(batx) {
+  pantallaInicial.classList.add('hidden');
+  if(batx === 2){
+    pantallaTemes.classList.remove('hidden');
+    llistaTemesDiv.innerHTML = '';
+    temes2n.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = t;
+      btn.onclick = () => triarTema(i+1, t);
+      llistaTemesDiv.appendChild(btn);
+    });
+  } else {
+    alert('Funcionalitat 1r Batx no implementada encara');
+  }
+}
+
+function triarTema(numeroTema, titol){
+  temaSeleccionat = numeroTema;
+  pantallaTemes.classList.add('hidden');
+  pantallaMode.classList.remove('hidden');
+  document.getElementById('tema-titol').textContent = titol;
+}
+
+function carregarPreguntes(callback){
+  fetch(`dades/tema${temaSeleccionat}.json`)
+    .then(res => res.json())
+    .then(data => {
+      preguntes = data.preguntes;
+      callback();
+    });
+}
+
+// ---------- Mode Estudi ----------
+
+function comencarEstudi(){
+  carregarPreguntes(() => {
+    indexPregunta = 0;
+    mostrarPregunta();
+    pantallaMode.classList.add('hidden');
+    pantallaEstudi.classList.remove('hidden');
+  });
+}
+
+function mostrarPregunta(){
+  document.getElementById('pregunta-estudi').textContent = preguntes[indexPregunta].pregunta;
+}
+
+function mostraResposta(){
+  alert(preguntes[indexPregunta].resposta);
+}
+
+function preguntaAnterior(){
+  if(indexPregunta > 0) indexPregunta--;
+  mostrarPregunta();
+}
+
+function preguntaSeguent(){
+  if(indexPregunta < preguntes.length - 1) indexPregunta++;
+  mostrarPregunta();
+}
+
+// ---------- Flashcards ----------
+
+let indexFlashcard = 0;
+let flashcardMostrantResposta = false;
+
+function mostrarFlashcards(){
+  indexFlashcard = 0;
+  flashcardMostrantResposta = false;
+  pantallaEstudi.classList.add('hidden');
+  pantallaFlashcards.classList.remove('hidden');
+  mostrarFlashcard();
+}
+
+function mostrarFlashcard(){
+  const fc = preguntes[indexFlashcard];
+  document.getElementById('flashcard').textContent = flashcardMostrantResposta ? fc.resposta : fc.pregunta;
+}
+
+function giraFlashcard(){
+  flashcardMostrantResposta = !flashcardMostrantResposta;
+  mostrarFlashcard();
+}
+
+function flashcardAnterior(){
+  if(indexFlashcard > 0) indexFlashcard--;
+  flashcardMostrantResposta = false;
+  mostrarFlashcard();
+}
+
+function flashcardSeguent(){
+  if(indexFlashcard < preguntes.length - 1) indexFlashcard++;
+  flashcardMostrantResposta = false;
+  mostrarFlashcard();
+}
+
+function tornarEstudi(){
+  pantallaFlashcards.classList.add('hidden');
+  pantallaEstudi.classList.remove('hidden');
+}
+
+// ---------- Mode Examen ----------
+
+function comencarExamen(){
+  alert('Mode Examen encara per implementar');
+}
+</script>
+
+</body>
+</html>
